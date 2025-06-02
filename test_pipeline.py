@@ -1,0 +1,217 @@
+"""
+test_pipeline.py
+A minimal command-line front end for Hugging Face `pipeline`
+that runs entirely on GPU if available.
+Supports PDF parsing with PyMuPDF and vision-language models.
+"""
+
+import argparse
+from pathlib import Path
+from time import perf_counter
+from typing import List, Union, Any
+
+import torch
+from transformers.pipelines import pipeline
+
+try:
+    import fitz  # PyMuPDF
+    PYMUPDF_AVAILABLE = True
+except ImportError:
+    fitz = None  # type: ignore
+    PYMUPDF_AVAILABLE = False
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    Image = None  # type: ignore
+    PIL_AVAILABLE = False
+
+
+# ----------------------------------------------------------------------
+# Default model catalogue (small enough for a first experiment)
+# ----------------------------------------------------------------------
+DEFAULT_MODELS = {
+    "text-generation": "gpt2",                       # 124 M parameters
+    "sentiment-analysis": "distilbert-base-uncased-finetuned-sst-2-english",
+    "question-answering": "deepset/roberta-base-squad2",
+    "image-to-text": "Salesforce/blip-image-captioning-base",  # Vision-language model
+    "visual-question-answering": "dandelin/vilt-b32-finetuned-vqa",  # VQA model
+}
+
+
+def extract_images_from_pdf(pdf_path: str) -> List[Any]:
+    """
+    Extract images from PDF pages using PyMuPDF.
+    Saves images to ./output folder and returns a list of PIL Images, one per page.
+    """
+    if not PYMUPDF_AVAILABLE:
+        raise ImportError("PyMuPDF is required for PDF processing. Install with: uv add pymupdf")
+    
+    if not PIL_AVAILABLE:
+        raise ImportError("Pillow is required for image processing. Install with: uv add pillow")
+    
+    # Create output directory if it doesn't exist
+    output_dir = Path("./output")
+    output_dir.mkdir(exist_ok=True)
+    
+    # Get the base filename without extension
+    pdf_name = Path(pdf_path).stem
+    
+    images = []
+    pdf_document = fitz.open(pdf_path)  # type: ignore
+    
+    for page_num in range(pdf_document.page_count):
+        page = pdf_document[page_num]
+        # Render page as image with high DPI for better quality
+        pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))  # type: ignore
+        img_data = pix.tobytes("png")
+        
+        # Convert to PIL Image
+        from io import BytesIO
+        img = Image.open(BytesIO(img_data))  # type: ignore
+        
+        # Save image to output folder with proper naming
+        output_filename = f"{pdf_name}_page_{page_num + 1}.png"
+        output_path = output_dir / output_filename
+        img.save(output_path)
+        
+        images.append(img)
+        
+        print(f"Extracted page {page_num + 1}/{pdf_document.page_count} as image -> {output_path}")
+    
+    pdf_document.close()
+    return images
+
+
+def build_pipeline(task: str, model_id: Union[str, None], fp16: bool) -> Any:
+    """
+    Instantiate a Transformers pipeline for the requested task.
+    If `model_id` is None, fall back to DEFAULT_MODELS[task].
+    """
+    if model_id is None:
+        model_id = DEFAULT_MODELS[task]
+
+    # Resolve the device automatically (GPU id 0 if CUDA is available)
+    device = 0 if torch.cuda.is_available() else -1
+
+    print(f"Loading model '{model_id}' for task '{task}' on",
+          "GPU" if device == 0 else "CPU")
+
+    # For vision tasks, use the pipeline directly
+    if task in ["image-to-text", "visual-question-answering"]:
+        return pipeline(
+            task, 
+            model=model_id, 
+            device=device,
+            torch_dtype=torch.float16 if fp16 and device == 0 else torch.float32
+        )
+    
+    # For text tasks, load model and tokenizer explicitly
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16 if fp16 and device == 0 else torch.float32,
+        device_map="auto" if device == 0 else None,
+    )
+
+    # do NOT pass `device=` once the model is already placed by Accelerate
+    return pipeline(task, model=model, tokenizer=tokenizer)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Quick GPU smoke-test for Hugging Face Transformers with PDF support."
+    )
+    parser.add_argument("--task", required=True,
+                        choices=list(DEFAULT_MODELS),
+                        help="Pipeline task, e.g. text-generation, image-to-text.")
+    parser.add_argument("--prompt", default=None,
+                        help="Text prompt (for text tasks) or question (for VQA).")
+    parser.add_argument("--pdf", default=None,
+                        help="Path to PDF file to extract images from.")
+    parser.add_argument("--model",
+                        help="Override the default model identifier.")
+    parser.add_argument("--fp16", action="store_true",
+                        help="Load model in half-precision if CUDA is available.")
+    parser.add_argument("--max-new-tokens", type=int, default=64,
+                        help="Number of tokens to generate (text-generation only).")
+
+    args = parser.parse_args()
+
+    # Validate arguments
+    if args.task in ["image-to-text", "visual-question-answering"] and not args.pdf:
+        parser.error(f"--pdf is required for task '{args.task}'")
+    
+    if args.pdf and not Path(args.pdf).exists():
+        parser.error(f"PDF file not found: {args.pdf}")
+
+    # Build the pipeline
+    n0 = perf_counter()
+    pipe = build_pipeline(args.task, args.model, args.fp16)
+    print(f"Pipeline loaded in {perf_counter() - n0:.1f}s\n")
+
+    # Extract images from PDF if provided
+    images = []
+    if args.pdf:
+        print(f"Extracting images from PDF: {args.pdf}")
+        images = extract_images_from_pdf(args.pdf)
+        print(f"Extracted {len(images)} images from PDF\n")
+
+    # Dispatch by task
+    if args.task == "text-generation":
+        if not args.prompt:
+            parser.error("--prompt is required for text-generation")
+        n0 = perf_counter()
+        out = pipe(args.prompt, max_new_tokens=args.max_new_tokens,
+                   do_sample=True, temperature=0.7)
+        dt = perf_counter() - n0
+        print("=== Generated text ===")
+        print(out[0]["generated_text"])
+        print(f"\nGeneration time: {dt:.2f}s")
+        
+    elif args.task == "sentiment-analysis":
+        if not args.prompt:
+            parser.error("--prompt is required for sentiment-analysis")
+        out = pipe(args.prompt)
+        print("=== Sentiment Analysis ===")
+        print(out)
+        
+    elif args.task == "question-answering":
+        if not args.prompt:
+            parser.error("--prompt is required for question-answering "
+                         "(format: 'question ||| context')")
+        try:
+            question, context = map(str.strip, args.prompt.split("|||", 1))
+        except ValueError:
+            parser.error("Provide prompt as 'question ||| context'")
+        out = pipe(question=question, context=context)
+        print("=== Question Answering ===")
+        print(out)
+        
+    elif args.task == "image-to-text":
+        print("=== Image Captioning ===")
+        for i, image in enumerate(images):
+            n0 = perf_counter()
+            out = pipe(image)
+            dt = perf_counter() - n0
+            print(f"Page {i+1}: {out[0]['generated_text']}")
+            print(f"Processing time: {dt:.2f}s")
+            
+    elif args.task == "visual-question-answering":
+        if not args.prompt:
+            parser.error("--prompt (question) is required for visual-question-answering")
+        print(f"=== Visual Question Answering ===")
+        print(f"Question: {args.prompt}")
+        for i, image in enumerate(images):
+            n0 = perf_counter()
+            out = pipe(image, args.prompt)
+            dt = perf_counter() - n0
+            print(f"Page {i+1}: {out[0]['answer']} (score: {out[0]['score']:.3f})")
+            print(f"Processing time: {dt:.2f}s")
+
+
+if __name__ == "__main__":
+    main()
