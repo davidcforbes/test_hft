@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"terminal.integrated.env.linux": {
+			"PATH": "/path/to/hf-env/bin:${env:PATH}",
+			"VIRTUAL_ENV": "/path/to/hf-env"
+		},
+		"terminal.integrated.env.osx": {
+			"PATH": "/path/to/hf-env/bin:${env:PATH}",
+			"VIRTUAL_ENV": "/path/to/hf-env"
+		},
+		"terminal.integrated.env.windows": {
+			"PATH": "C:\\path\\to\\hf-env\\Scripts;${env:PATH}",
+			"VIRTUAL_ENV": "C:\\path\\to\\hf-env"
+		}
+	}
+}

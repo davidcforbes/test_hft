@@ -5,9 +5,22 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "torch>=2.0.0",
+    "torch==2.7.0",
     "transformers>=4.30.0",
     "pymupdf>=1.23.0",
     "pillow>=10.0.0",
     "reportlab>=4.0.0",
+    "einops>=0.8.1",
+    "timm>=1.0.15",
+    "bitsandbytes>=0.41.0",
+    "accelerate>=0.25.0",
+    # Note: flash-attn is optional for faster inference but requires compilation
 ]
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
