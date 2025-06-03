@@ -1,9 +1,10 @@
 User: <image>
 Extract all of the text from the attached image files and generate a single output markdown file that combines all extracted text and matches the original image format, style, look, and feel. Ensure you preserve bullet points, lists, and tables, but do not include graphics. Do not include your own disclaimers or comments in your response. Do not hallucinate.
 Assistant: ```markdown
+
 # PURCHASE AGREEMENT
 
-## Between CXtec (PURCHASER) and the SELLER:
+## Between CXtec (PURCHASER) and the SELLER
 
 **Credit One Bank**
 6801 S Cimarron Rd
@@ -18,35 +19,42 @@ This Purchase Agreement Number must appear on all order acknowledgments, packing
 **Ship To:**
 Receiving: D1176564
 
-**MULTIPLE " "Ship to" LOCATIONS MAY EXIST** 
+**MULTIPLE " "Ship to" LOCATIONS MAY EXIST**
 Please review list for details and arrange shipping accordingly.
 
 ### SELLER CONTACT
+
 David Chan
 
 ### SELLER TELEPHONE
+
 (775)7r7r-53583
 
 ### DATE/TIME OF ORDER
+
 27-Nov-24 10:15 AM
 
 ### BUYER/SALES REP
+
 Sean Dixon/David Swift
 
 ### PAYMENT TERMS/METHOD
+
 NET 30/CREDMEMO
 
 ### SHIP VIA/PRIORITY
+
 F.O.B.
 Common Carrier/GROUND
 See Below
 
 ### EXPECTED DATE
+
 002 14/25
 
 ---
 
-### Subject to the Terms and Conditions on this agreement, the SELLER agrees to sell and the PURCHASER agrees to purchase the equipment listed below (the equipment).
+### Subject to the Terms and Conditions on this agreement, the SELLER agrees to sell and the PURCHASER agrees to purchase the equipment listed below (the equipment)
 
 **Ship To** CX Item # **Description** Mfg. Part #  Qty   Unit  Unit Price  Extended
 
@@ -83,6 +91,7 @@ Payment
 Credit on account Upon Acceptance/Testing, 30 days after receipt for product listed above, will expire after three (3) year period period. Payment to seller may not be converted to cash.
 
 CXtec 400 South Salina St, Syracuse NY 13202 Offices: 315.477.63090 Sales Fax: 315.455.1800
+
 ```
 User: <image>
 Extract all of the text from the attached image files and generate a single output markdown file that combines all extracted text and matches the original image format, style, look, and feel. Ensure you preserve bullet points, lists, and tables, but do not include graphics. Do not include your own disclaimers or comments in your response. Do not hallucinate.
@@ -171,42 +180,51 @@ By:* **George Hughes - CFO**
 CXtec  
 400 South Salina St, Syracuse NY 132022 Offices: *315.476.3000* Sales Fax: *315.55.1800*
 ```
+
 User: <image>
 Extract all of the text from the attached image files and generate a single output markdown file that combines all extracted text and matches the original image format, style, look, and feel. Ensure you preserve bullet points, lists, and tables, but do not include graphics. Do not include your own disclaimers or comments in your response. Do not hallucinate.
 Assistant: ```markdown
-# PURCHASE AGREEMENT between CXtec (PURCHASER) and the SELLER:
+
+# PURCHASE AGREEMENT between CXtec (PURCHASER) and the SELLER
 
 **Purchase Agreement D1176564**  
 _Credit One Bank_  
 **6801 S Cimarron Rd**  
 _Las Vegas NV 89913_
 
-### PURCHASE AGREEMENT MUST APPEAR ON ALL ORDER ACKNOWLEDGEMENTS...
+### PURCHASE AGREEMENT MUST APPEAR ON ALL ORDER ACKNOWLEDGEMENTS
 
 #### SELLER CONTACT  
+
 David Chan  
 **SELLER TELEPHONE**: (7725)-3583
 
-#### DATE/TIME OF ORDER:  
+#### DATE/TIME OF ORDER  
+
 27-Nov-24 10:15 AM
 
-#### BUYERS/SALES REP:  
+#### BUYERS/SALES REP  
+
 Sean Dixon/David Swift
 
 ### PAYMENT TERMS/METHOD  
+
 **NET 30/CREDMEMO**
 
 ### SHIP VIA/PRIORITY  
+
 _F.O.B._ Common Carrier/GROUND  
 **EXPECTED DATE**: 00/07/25
 
 ### Ship To  
+
 CX Item #      Description           Mfg. Part # | Qty | Unit | Unit Price | Extended  
 CXtec  
 **4388 Shackleford Rd**  
 Nordcros, GA 280039 US  
 
 #### 7755258-B21**  
+
 **PER6308XX25-OEM**  
 PER30XXD12XXC30EM  
 
@@ -217,6 +235,7 @@ PER30XXD12XXC30EM
 **DCX8510-4**
 
 #### BR-6520-48-  
+
 **Oracle ACME Packet 3900 Network Switch**
 
 **Oracle ACME Packet**
@@ -228,7 +247,8 @@ PER30XXD12XXC30EM
 
 **Oracle Servers**
 
-#### PAYMENT INFORMATION:
+#### PAYMENT INFORMATION
+
 _Credit on account Upon Acceptance/Testing, 30 days after receipt for product listed above, will expire after three (3) year period. Payment to seller may be converted to cash._
 
 ---
@@ -240,4 +260,5 @@ $57,767.00
 $57,677.00
 
 _CXXtec 400 South Salina St, Syracuse NY 13202 Offices**: 315.473.3000 Sales Fax: 315.435.1800_
+
 ```

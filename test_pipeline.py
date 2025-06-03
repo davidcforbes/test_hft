@@ -12,6 +12,7 @@ from typing import List, Union, Any
 
 import torch
 from transformers.pipelines import pipeline
+from hf_auth import authenticate_hf, get_model_kwargs
 
 try:
     import fitz  # PyMuPDF
@@ -124,7 +125,7 @@ def save_to_markdown(content: str, base_filename: str, task: str) -> str:
     return str(md_path)
 
 
-def build_pipeline(task: str, model_id: Union[str, None], fp16: bool) -> Any:
+def build_pipeline(task: str, model_id: Union[str, None], fp16: bool, use_auth: bool = True) -> Any:
     """
     Instantiate a Transformers pipeline for the requested task.
     If `model_id` is None, fall back to DEFAULT_MODELS[task].
@@ -137,6 +138,9 @@ def build_pipeline(task: str, model_id: Union[str, None], fp16: bool) -> Any:
 
     print(f"Loading model '{model_id}' for task '{task}' on",
           "GPU" if device == 0 else "CPU")
+    
+    # Get authentication kwargs
+    auth_kwargs = get_model_kwargs(use_auth_token=use_auth)
 
     # For vision tasks, use the pipeline directly
     if task in ["image-to-text", "visual-question-answering"]:
@@ -144,17 +148,19 @@ def build_pipeline(task: str, model_id: Union[str, None], fp16: bool) -> Any:
             task, 
             model=model_id, 
             device=device,
-            torch_dtype=torch.float16 if fp16 and device == 0 else torch.float32
+            torch_dtype=torch.float16 if fp16 and device == 0 else torch.float32,
+            **auth_kwargs
         )
     
     # For text tasks, load model and tokenizer explicitly
     from transformers import AutoModelForCausalLM, AutoTokenizer
     
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, **auth_kwargs)
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.float16 if fp16 and device == 0 else torch.float32,
         device_map="auto" if device == 0 else None,
+        **auth_kwargs
     )
 
     # do NOT pass `device=` once the model is already placed by Accelerate
@@ -180,6 +186,8 @@ def main() -> None:
                         help="Number of tokens to generate (text-generation only).")
     parser.add_argument("--save-output", action="store_true",
                         help="Save generated output to markdown files.")
+    parser.add_argument("--no-auth", action="store_true",
+                        help="Disable HuggingFace authentication (use for public models only).")
 
     args = parser.parse_args()
 
@@ -190,9 +198,14 @@ def main() -> None:
     if args.pdf and not Path(args.pdf).exists():
         parser.error(f"PDF file not found: {args.pdf}")
 
+    # Authenticate with HuggingFace if not disabled
+    use_auth = not args.no_auth
+    if use_auth:
+        authenticate_hf()
+
     # Build the pipeline
     n0 = perf_counter()
-    pipe = build_pipeline(args.task, args.model, args.fp16)
+    pipe = build_pipeline(args.task, args.model, args.fp16, use_auth=use_auth)
     print(f"Pipeline loaded in {perf_counter() - n0:.1f}s\n")
 
     # Extract images from PDF if provided

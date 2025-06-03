@@ -1,0 +1,30 @@
+Image Path: input_page_1.png
+Prompt: Extract and describe the text content in this image.
+Analysis Time: 2025-06-03 12:25:14
+Duration: 237.75 seconds
+
+Result:
+The document is a Purchase Agreement between CXtec (the Purchaser) and Credit One Bank (the Seller). The agreement number is D1176564, and it specifies that this number must appear on all order acknowledgments, packing lists, cartons, and correspondence.
+
+### Key Information:
+- **Ship To:** Receiving: D1176564
+- **Multiple Ship to Locations:** Multiple "Ship to" locations may exist; please review line items for details and arrange shipping accordingly.
+- **Seller Contact:** David Chan
+- **Seller Telephone:** (725) 735-3583
+- **Date/Time of Order:** 27-Nov-24 10:15 AM
+- **Buyer/SALES REP:** Sean Dixon/David Swift
+- **Payment Terms/Method:** NET 30/CREDMEMO
+- **Ship Via/Priority:** Common Carrier/GROUND
+- **F.O.B.:** See Below
+- **Expected Date:** 02/14/25
+
+### Equipment List:
+The equipment listed includes various servers, storage devices, network switches, and other IT hardware. Here are some examples:
+
+- **HP ProLiant DL360 Gen9 8SFF CTO Server:** 7 units at $50.00 each, totaling $350.00.
+- **OEM Server PowerEdge R630 8x 2.5IN:** 3 units at $25.00 each, totaling $75.00.
+- **Server Dell PowerEdge R730XD 12x 3.5in OEM:** 2 units at $100.00 each, totaling $200.00.
+- **Cisco UCS C220 M4 SFF Rack Server:** 2 units at $25.00 each, totaling $50.00.
+- **SUN SPARC T4-4 Server:** 1 unit at $25.00, totaling $25.00.
+- **Oracle T5-2 Server with 4X600GB 36X16GB DDR3:** 2 units at $350.00 each, totaling $700.00.
+- **IBM System Storage SAN384B-2:** 2 units at $50.
